@@ -398,6 +398,10 @@ def generate_grouped_bar_chart(dataset: pd.DataFrame, prompt_id: str, metric_col
     label_padding = 4
     manual_legend_x = 307
 
+    y_domain: tuple[int, int] = (0, 1) if metric_col != "mae" else (0, 20)
+    y_values: list[float] = [0, 0.25, 0.5, 0.75, 1] if metric_col != "mae" else [0, 5, 10, 15, 20]
+    y_format = "%" if metric_col != "mae" else "s"
+
     dataset_to_plot = dataset.query("prompt_id == @prompt_id").assign(
         prompt_strategy=dataset["prompt_strategy"].map(PROMPT_STRATEGY_TO_LABEL),
         model=dataset["model"].map(MODEL_TO_LABEL),
@@ -424,15 +428,15 @@ def generate_grouped_bar_chart(dataset: pd.DataFrame, prompt_id: str, metric_col
         )
         .sort(list(MODEL_TO_LABEL.values())),
         y=alt.Y(f"{metric_col}:Q")
-        .scale(domain=[0, 1])
+        .scale(domain=y_domain)
         .axis(
             title=None,
-            format="%",
-            tickCount=5,
-            values=[0, 0.25, 0.5, 0.75, 1],
-            labelExpr=f"datum.value == 1 ? [datum.label, '{METRIC_ID_TO_LABEL[metric_col]}', '({prompt_id.split('_')[0]}s)'] : datum.label"
-            if metric_col == "accuracy"
-            else f"datum.value == 1 ? [datum.label, '{METRIC_ID_TO_LABEL[metric_col].split(' ', 1)[0]}', '{METRIC_ID_TO_LABEL[metric_col].split(' ', 1)[1]}'] : datum.label",
+            format=y_format,
+            tickCount=len(y_values),
+            values=y_values,
+            labelExpr=f"datum.value == {y_domain[1]} ? [datum.label, '{METRIC_ID_TO_LABEL[metric_col]}', '({prompt_id.split('_')[0]}s)'] : datum.label"
+            if metric_col in {"accuracy", "mae"}
+            else f"datum.value == {y_domain[1]} ? [datum.label, '{METRIC_ID_TO_LABEL[metric_col].split(' ', 1)[0]}', '{METRIC_ID_TO_LABEL[metric_col].split(' ', 1)[1]}'] : datum.label",
             labelFontSize=8,
         ),
         xOffset=alt.XOffset("prompt_strategy:N", sort=list(PROMPT_STRATEGY_TO_LABEL.values())).scale(paddingOuter=0.25),

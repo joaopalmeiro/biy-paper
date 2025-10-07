@@ -30,8 +30,13 @@ if __name__ == "__main__":
         results.groupby(["prompt_id", "model", "prompt_strategy"])[["response", "pred_response"]]
         .apply(lambda group: mean_absolute_error(group["response"], group["pred_response"]))
         .reset_index(name="mae")
-        .sort_values(["prompt_id", "mae"], ascending=True)
     )
+
+    generate_grouped_bar_chart(prompt_strategy_mae, "cluster_count", "mae")
+    generate_grouped_bar_chart(prompt_strategy_mae, "outlier_count", "mae")
+
+    prompt_strategy_mae = prompt_strategy_mae.sort_values(["prompt_id", "mae"], ascending=True)
+
     logger.info("MAE:\n{results}", results=prompt_strategy_mae)
     prompt_strategy_mae.to_csv(ALL_RESULTS / "counting_mae.csv", index=False)
 
