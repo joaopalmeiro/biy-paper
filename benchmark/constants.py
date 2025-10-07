@@ -155,6 +155,7 @@ PROMPT_STRATEGY_TO_LABEL: dict[str, str] = {
 
 METRIC_ID_TO_LABEL: dict[str, str] = {
     "accuracy": "Accuracy",
+    "mae": "MAE",
     "precision_0_75": "Precision @ IoU75",
     "recall_0_75": "Recall @ IoU75",
     "precision_10": "Precision @ 10px",
